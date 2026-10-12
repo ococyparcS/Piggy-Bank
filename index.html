@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50 text-slate-800">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SG Wealth & CPF Net Worth Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Inter & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fcfaff;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .friendly-card {
+            background: #ffffff;
+            border: 2px solid #f1f0fb;
+            box-shadow: 0 10px 30px -5px rgba(200, 190, 230, 0.15);
+            border-radius: 1.5rem;
+        }
+        .friendly-card-sm {
+            background: #ffffff;
+            border: 2px solid #f3f0fc;
+            box-shadow: 0 4px 12px rgba(180, 170, 220, 0.08);
+            border-radius: 1rem;
+        }
+        .friendly-btn {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .friendly-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+        }
+        .friendly-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+        /* Custom Soft Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f5f2fd; }
+        ::-webkit-scrollbar-thumb { background: #dcd6f7; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c2b9f3; }
+    </style>
+</head>
+<body class="bg-purple-50/20 text-slate-800 min-h-screen flex flex-col selection:bg-purple-200 selection:text-purple-900">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b-2 border-purple-100/60 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 rounded-2xl bg-amber-100 text-amber-800 shadow-sm border border-amber-200 font-extrabold text-2xl flex items-center justify-center transform hover:rotate-6 transition-transform">
+                    🐷
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight text-slate-800 flex items-center gap-2">
+                        Piggy Bank <span class="text-xs font-black px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">SG 2026 🇸🇬</span>
+                    </h1>
+                    <p class="text-xs font-bold text-purple-400">Super gentle pastel finance & CPF calculator!</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex flex-wrap justify-center gap-2 bg-purple-50/80 p-1.5 rounded-2xl border border-purple-100 font-bold text-xs sm:text-sm">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="friendly-btn px-4 py-2.5 rounded-xl bg-purple-200 text-purple-900 shadow-sm flex items-center gap-2">
+                    <span class="text-base">📊</span> My Summary
+                </button>
+                <button onclick="switchTab('income')" id="nav-income" class="friendly-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-2">
+                    <span class="text-base">💵</span> Income & CPF
+                </button>
+                <button onclick="switchTab('assets')" id="nav-assets" class="friendly-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-2">
+                    <span class="text-base">🏦</span> Piggy Bank & Assets
+                </button>
+                <button onclick="switchTab('liabilities')" id="nav-liabilities" class="friendly-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-2">
+                    <span class="text-base">🛒</span> Bills & Loans
+                </button>
+                <button onclick="switchTab('cpf')" id="nav-cpf" class="friendly-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-2">
+                    <span class="text-base">🚀</span> Future CPF Growth
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        <!-- ================= TAB 1: DASHBOARD ================= -->
+        <div id="tab-dashboard" class="tab-content active space-y-6">
+            <!-- Key Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="friendly-card p-5 bg-gradient-to-br from-indigo-100 via-purple-100 to-indigo-50 border-2 border-indigo-200/60 text-slate-800 relative overflow-hidden group">
+                    <div class="flex items-center gap-2 text-indigo-700 text-xs font-extrabold uppercase tracking-wider mb-1">
+                        <span>✨</span> Net Worth (Money Saved)
+                    </div>
+                    <h2 id="dash-net-worth" class="text-3xl sm:text-4xl font-black text-indigo-950 tracking-tight">$0</h2>
+                    <p class="mt-2 text-xs font-bold text-indigo-700 bg-white/60 px-2.5 py-1 rounded-lg inline-block border border-indigo-200/50">
+                        Total Assets minus Total Bills
+                    </p>
+                </div>
+
+                <div class="friendly-card p-5 bg-gradient-to-br from-emerald-100 via-teal-100 to-emerald-50 border-2 border-emerald-200/60 text-slate-800 relative overflow-hidden">
+                    <div class="flex items-center gap-2 text-emerald-800 text-xs font-extrabold uppercase tracking-wider mb-1">
+                        <span>🌱</span> Total Wealth
+                    </div>
+                    <h2 id="dash-total-assets" class="text-3xl sm:text-4xl font-black text-emerald-950 tracking-tight">$0</h2>
+                    <p class="mt-2 text-xs font-bold text-emerald-800 bg-white/60 px-2.5 py-1 rounded-lg inline-block border border-emerald-200/50">
+                        Cash + Investments + SRS + CPF
+                    </p>
+                </div>
+
+                <div class="friendly-card p-5 bg-gradient-to-br from-rose-100 via-pink-100 to-rose-50 border-2 border-rose-200/60 text-slate-800 relative overflow-hidden">
+                    <div class="flex items-center gap-2 text-rose-800 text-xs font-extrabold uppercase tracking-wider mb-1">
+                        <span>🌸</span> Total Debt & Loans
+                    </div>
+                    <h2 id="dash-total-liabilities" class="text-3xl sm:text-4xl font-black text-rose-950 tracking-tight">$0</h2>
+                    <p class="mt-2 text-xs font-bold text-rose-800 bg-white/60 px-2.5 py-1 rounded-lg inline-block border border-rose-200/50">
+                        Full Loans Owed (Inc. Interest)
+                    </p>
+                </div>
+
+                <div class="friendly-card p-5 bg-gradient-to-br from-amber-100 via-orange-100 to-amber-50 border-2 border-amber-200/60 text-slate-800 relative overflow-hidden">
+                    <div class="flex items-center gap-2 text-amber-800 text-xs font-extrabold uppercase tracking-wider mb-1">
+                        <span>☀️</span> Leftover Monthly Cash
+                    </div>
+                    <h2 id="dash-monthly-cashflow" class="text-3xl sm:text-4xl font-black text-amber-950 tracking-tight">$0</h2>
+                    <p class="mt-2 text-xs font-bold text-amber-800 bg-white/60 px-2.5 py-1 rounded-lg inline-block border border-amber-200/50">
+                        Salary Left After Monthly Expenses
+                    </p>
+                </div>
+            </div>
+
+            <!-- Visual Charts & Indicators -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Doughnut Chart Asset Distribution -->
+                <div class="friendly-card p-6 lg:col-span-1 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-slate-900 mb-1 flex items-center gap-2">
+                            <span>🎨</span> Where Is My Money?
+                        </h3>
+                        <p class="text-xs font-semibold text-slate-500 mb-4">A simple pie chart showing all your savings.</p>
+                        <div class="relative w-48 h-48 mx-auto my-2">
+                            <canvas id="assetDoughnutChart"></canvas>
+                        </div>
+                    </div>
+                    <div id="chart-legend-custom" class="space-y-2 mt-4 text-xs font-bold">
+                        <!-- Custom legend populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Comprehensive Breakdown Progress Bars & Health Indicators -->
+                <div class="friendly-card p-6 lg:col-span-2 space-y-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-slate-900 mb-1 flex items-center gap-2">
+                            <span>📊</span> Savings Breakdown
+                        </h3>
+                        <p class="text-xs font-semibold text-slate-500 mb-5">See how your money is divided into easy visual bars.</p>
+
+                        <div id="allocation-bars" class="space-y-4">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Simplified Financial Health Indicators -->
+                    <div class="pt-4 border-t-2 border-purple-50">
+                        <h4 class="text-xs font-black uppercase tracking-wider text-purple-400 mb-3">Money Health Scorecard</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="p-3.5 rounded-2xl bg-indigo-50/70 border-2 border-indigo-100 text-center">
+                                <span class="text-xs font-bold text-indigo-700 block">Available Cash %</span>
+                                <span id="health-liquidity" class="text-xl font-black text-indigo-900">0%</span>
+                                <p class="text-[11px] text-indigo-600 font-bold mt-0.5">Cash/CPF vs Total Assets</p>
+                            </div>
+                            <div class="p-3.5 rounded-2xl bg-rose-50/70 border-2 border-rose-100 text-center">
+                                <span class="text-xs font-bold text-rose-700 block">Loans %</span>
+                                <span id="health-debt" class="text-xl font-black text-rose-900">0%</span>
+                                <p class="text-[11px] text-rose-600 font-bold mt-0.5">Liabilities vs Total Assets</p>
+                            </div>
+                            <div class="p-3.5 rounded-2xl bg-emerald-50/70 border-2 border-emerald-100 text-center">
+                                <span class="text-xs font-bold text-emerald-700 block">Monthly Savings Rate</span>
+                                <span id="health-savings" class="text-xl font-black text-emerald-900">0%</span>
+                                <p class="text-[11px] text-emerald-600 font-bold mt-0.5">Savings Saved vs Income</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: INCOME & CPF ================= -->
+        <div id="tab-income" class="tab-content space-y-6">
+            <div class="friendly-card p-6">
+                <div class="mb-6">
+                    <h3 class="text-xl font-black text-slate-900 flex items-center gap-2">
+                        <span>💵</span> Salary & Singapore CPF Details
+                    </h3>
+                    <p class="text-xs font-semibold text-slate-500 mt-1">
+                        Type your monthly salary below. The system will automatically calculate your <strong>CPF contributions</strong> (OA, SA, MA) for 2026 based on your age!
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Primary User Profile -->
+                    <div class="bg-indigo-50/60 p-5 rounded-2xl border-2 border-indigo-100 space-y-4">
+                        <div class="flex justify-between items-center pb-2 border-b-2 border-indigo-100/60">
+                            <h4 class="font-extrabold text-indigo-900 text-base flex items-center gap-2">
+                                👤 Primary Salary Details
+                            </h4>
+                            <span class="text-xs font-black px-2.5 py-1 rounded-full bg-indigo-200/80 text-indigo-900">You</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">How old are you?</label>
+                                <input type="number" id="user-age" value="30" oninput="calculateCPF()" class="w-full px-4 py-2.5 rounded-xl bg-white border-2 border-indigo-200 text-base font-extrabold text-slate-900 focus:outline-none focus:border-indigo-400 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Monthly Salary ($)</label>
+                                <input type="number" id="user-salary" value="5500" oninput="calculateCPF()" class="w-full px-4 py-2.5 rounded-xl bg-white border-2 border-indigo-200 text-base font-extrabold text-slate-900 focus:outline-none focus:border-indigo-400 shadow-sm">
+                            </div>
+                        </div>
+
+                        <!-- User CPF Output Card -->
+                        <div class="p-4 rounded-xl bg-white border-2 border-indigo-100 shadow-sm space-y-3">
+                            <div class="flex justify-between text-xs font-bold text-slate-600">
+                                <span>Deducted from your salary (Employee):</span>
+                                <span id="cpf-user-employee" class="font-black text-rose-500">$0 /mo</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold text-slate-600">
+                                <span>Free bonus money from Boss (Employer):</span>
+                                <span id="cpf-user-employer" class="font-black text-emerald-600">$0 /mo</span>
+                            </div>
+                            <div class="flex justify-between text-sm font-black text-indigo-950 pt-2 border-t-2 border-indigo-50">
+                                <span>Total Monthly CPF Money Added:</span>
+                                <span id="cpf-user-total" class="text-lg text-indigo-700 font-extrabold">$0 /mo</span>
+                            </div>
+
+                            <!-- Account Allocation Badges -->
+                            <div class="grid grid-cols-3 gap-2 pt-2">
+                                <div class="bg-sky-50 p-2.5 rounded-xl border border-sky-200/80 text-center">
+                                    <p class="text-[10px] font-black text-sky-700 uppercase">OA (Housing)</p>
+                                    <p id="cpf-user-oa" class="font-black text-sky-950 text-base mt-0.5">$0</p>
+                                </div>
+                                <div class="bg-purple-50 p-2.5 rounded-xl border border-purple-200/80 text-center">
+                                    <p id="cpf-user-sa-label" class="text-[10px] font-black text-purple-700 uppercase">SA (Retire)</p>
+                                    <p id="cpf-user-sa" class="font-black text-purple-950 text-base mt-0.5">$0</p>
+                                </div>
+                                <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200/80 text-center">
+                                    <p class="text-[10px] font-black text-emerald-700 uppercase">MA (Medical)</p>
+                                    <p id="cpf-user-ma" class="font-black text-emerald-950 text-base mt-0.5">$0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spouse User Profile -->
+                    <div class="bg-purple-50/60 p-5 rounded-2xl border-2 border-purple-100 space-y-4">
+                        <div class="flex justify-between items-center pb-2 border-b-2 border-purple-100/60">
+                            <h4 class="font-extrabold text-purple-900 text-base flex items-center gap-2">
+                                💍 Spouse Salary Details
+                            </h4>
+                            <span class="text-xs font-black px-2.5 py-1 rounded-full bg-purple-200/80 text-purple-900">Optional</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Spouse Age</label>
+                                <input type="number" id="spouse-age" value="28" oninput="calculateCPF()" class="w-full px-4 py-2.5 rounded-xl bg-white border-2 border-purple-200 text-base font-extrabold text-slate-900 focus:outline-none focus:border-purple-400 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Spouse Monthly Salary ($)</label>
+                                <input type="number" id="spouse-salary" value="4800" oninput="calculateCPF()" class="w-full px-4 py-2.5 rounded-xl bg-white border-2 border-purple-200 text-base font-extrabold text-slate-900 focus:outline-none focus:border-purple-400 shadow-sm">
+                            </div>
+                        </div>
+
+                        <!-- Spouse CPF Output Card -->
+                        <div class="p-4 rounded-xl bg-white border-2 border-purple-100 shadow-sm space-y-3">
+                            <div class="flex justify-between text-xs font-bold text-slate-600">
+                                <span>Spouse Salary Deduction:</span>
+                                <span id="cpf-spouse-employee" class="font-black text-rose-500">$0 /mo</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold text-slate-600">
+                                <span>Spouse Boss Bonus:</span>
+                                <span id="cpf-spouse-employer" class="font-black text-emerald-600">$0 /mo</span>
+                            </div>
+                            <div class="flex justify-between text-sm font-black text-purple-950 pt-2 border-t-2 border-purple-50">
+                                <span>Total Spouse Monthly CPF:</span>
+                                <span id="cpf-spouse-total" class="text-lg text-purple-700 font-extrabold">$0 /mo</span>
+                            </div>
+
+                            <!-- Account Allocation Badges -->
+                            <div class="grid grid-cols-3 gap-2 pt-2">
+                                <div class="bg-sky-50 p-2.5 rounded-xl border border-sky-200/80 text-center">
+                                    <p class="text-[10px] font-black text-sky-700 uppercase">OA (Housing)</p>
+                                    <p id="cpf-spouse-oa" class="font-black text-sky-950 text-base mt-0.5">$0</p>
+                                </div>
+                                <div class="bg-purple-50 p-2.5 rounded-xl border border-purple-200/80 text-center">
+                                    <p id="cpf-spouse-sa-label" class="text-[10px] font-black text-purple-700 uppercase">SA (Retire)</p>
+                                    <p id="cpf-spouse-sa" class="font-black text-purple-950 text-base mt-0.5">$0</p>
+                                </div>
+                                <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200/80 text-center">
+                                    <p class="text-[10px] font-black text-emerald-700 uppercase">MA (Medical)</p>
+                                    <p id="cpf-spouse-ma" class="font-black text-emerald-950 text-base mt-0.5">$0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Existing CPF Balances Inputs -->
+            <div class="friendly-card p-6">
+                <h3 class="text-lg font-black text-slate-900 mb-1 flex items-center gap-2">
+                    <span>🏦</span> Current CPF Account Balances
+                </h3>
+                <p class="text-xs font-semibold text-slate-500 mb-4">Type in your existing CPF account balances right now (from your Singpass app).</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-sky-50/50 p-4 rounded-2xl border-2 border-sky-200/80">
+                        <label class="block text-xs font-black text-sky-800 uppercase tracking-wide mb-1">Ordinary Account (OA)</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-2 text-sky-400 text-lg font-bold">$</span>
+                            <input type="number" id="bal-oa" value="52000" oninput="saveAndRender()" class="w-full pl-8 pr-3 py-2 rounded-xl bg-white border border-sky-200 text-lg font-black text-slate-900 focus:outline-none focus:border-sky-400 shadow-sm">
+                        </div>
+                    </div>
+                    <div class="bg-purple-50/50 p-4 rounded-2xl border-2 border-purple-200/80">
+                        <label class="block text-xs font-black text-purple-800 uppercase tracking-wide mb-1">Special Account (SA/RA)</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-2 text-purple-400 text-lg font-bold">$</span>
+                            <input type="number" id="bal-sa" value="38000" oninput="saveAndRender()" class="w-full pl-8 pr-3 py-2 rounded-xl bg-white border border-purple-200 text-lg font-black text-slate-900 focus:outline-none focus:border-purple-400 shadow-sm">
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50/50 p-4 rounded-2xl border-2 border-emerald-200/80">
+                        <label class="block text-xs font-black text-emerald-800 uppercase tracking-wide mb-1">MediSave Account (MA)</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-2 text-emerald-400 text-lg font-bold">$</span>
+                            <input type="number" id="bal-ma" value="24000" oninput="saveAndRender()" class="w-full pl-8 pr-3 py-2 rounded-xl bg-white border border-emerald-200 text-lg font-black text-slate-900 focus:outline-none focus:border-emerald-400 shadow-sm">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: PORTFOLIOS & ASSETS ================= -->
+        <div id="tab-assets" class="tab-content space-y-6">
+            <div class="friendly-card p-6">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
+                    <div>
+                        <h3 class="text-xl font-black text-slate-900 flex items-center gap-2">
+                            <span>💼</span> My Portfolios, SRS & OA Investments
+                        </h3>
+                        <p class="text-xs font-semibold text-slate-500">Add your bank savings, stock investments, SRS funds, CPF OA investments, or crypto here!</p>
+                    </div>
+                    <button onclick="openAssetModal()" class="friendly-btn bg-emerald-200 hover:bg-emerald-300 text-emerald-950 px-5 py-3 rounded-2xl text-xs font-extrabold shadow-sm border border-emerald-300 transition flex items-center justify-center gap-2">
+                        <span class="text-base">➕</span> Add New Asset
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead class="bg-purple-50/60 text-purple-900 uppercase text-[11px] font-black border-b-2 border-purple-100">
+                            <tr>
+                                <th class="p-3.5 rounded-l-xl">Asset Name</th>
+                                <th class="p-3.5">Category</th>
+                                <th class="p-3.5">Current Value ($)</th>
+                                <th class="p-3.5 text-right rounded-r-xl">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assets-table-body" class="divide-y divide-purple-50 font-bold text-slate-800">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 4: DEBT & EXPENSES ================= -->
+        <div id="tab-liabilities" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Liabilities / Loans Section -->
+                <div class="friendly-card p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                                    <span>🏦</span> Loans & Debt Calculator
+                                </h3>
+                                <p class="text-xs font-bold text-slate-400">Includes interest rate % & loan tenure</p>
+                            </div>
+                            <button onclick="openLiabilityModal()" class="friendly-btn bg-rose-200 hover:bg-rose-300 text-rose-950 px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-sm border border-rose-300 transition">
+                                ➕ Add Loan
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-rose-50/60 text-rose-900 uppercase text-[11px] font-black border-b-2 border-rose-100">
+                                    <tr>
+                                        <th class="p-3 rounded-l-xl">Loan Item</th>
+                                        <th class="p-3">Terms (% / Yrs)</th>
+                                        <th class="p-3">Total Amount Owed ($)</th>
+                                        <th class="p-3 text-right rounded-r-xl">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liabilities-table-body" class="divide-y divide-rose-50 font-bold text-slate-800">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Fixed Expenses Section -->
+                <div class="friendly-card p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                                <span>📅</span> Monthly Fixed Bills
+                            </h3>
+                            <button onclick="openExpenseModal()" class="friendly-btn bg-indigo-200 hover:bg-indigo-300 text-indigo-950 px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-sm border border-indigo-300 transition">
+                                ➕ Add Monthly Bill
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-indigo-50/60 text-indigo-900 uppercase text-[11px] font-black border-b-2 border-indigo-100">
+                                    <tr>
+                                        <th class="p-3 rounded-l-xl">Bill Item</th>
+                                        <th class="p-3">Monthly Cost ($)</th>
+                                        <th class="p-3 text-right rounded-r-xl">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expenses-table-body" class="divide-y divide-indigo-50 font-bold text-slate-800">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Ad-hoc Expenses Logger -->
+            <div class="friendly-card p-6">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                            <span>🛍️</span> Quick Daily Spending Log
+                        </h3>
+                        <p class="text-xs font-semibold text-slate-500">Record food, snacks, Grab rides, or daily toys you bought today!</p>
+                    </div>
+                    <div class="flex flex-wrap sm:flex-nowrap gap-2 w-full lg:w-auto">
+                        <input type="text" id="adhoc-desc" placeholder="What did you buy? (e.g. Lunch)" class="px-4 py-2.5 rounded-xl bg-purple-50/40 border-2 border-purple-100 text-xs font-bold text-slate-900 focus:outline-none focus:border-purple-300 flex-1">
+                        <input type="number" id="adhoc-amount" placeholder="Cost ($)" class="w-28 px-4 py-2.5 rounded-xl bg-purple-50/40 border-2 border-purple-100 text-xs font-bold text-slate-900 focus:outline-none focus:border-purple-300">
+                        <button onclick="addAdhocExpense()" class="friendly-btn bg-amber-200 hover:bg-amber-300 text-amber-950 px-5 py-2.5 rounded-xl text-xs font-black shadow-sm border border-amber-300 transition">Log Spending</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead class="bg-amber-50/60 text-amber-900 uppercase text-[11px] font-black border-b-2 border-amber-100">
+                            <tr>
+                                <th class="p-3 rounded-l-xl">Item</th>
+                                <th class="p-3">Date</th>
+                                <th class="p-3">Amount ($)</th>
+                                <th class="p-3 text-right rounded-r-xl">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adhoc-table-body" class="divide-y divide-amber-50 font-bold text-slate-800">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 5: CPF FORECASTER ================= -->
+        <div id="tab-cpf" class="tab-content space-y-6">
+            <div class="friendly-card p-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="text-xl font-black text-slate-900 flex items-center gap-2">
+                            <span>🚀</span> CPF Growth & Retirement Simulator
+                        </h3>
+                        <p class="text-xs font-semibold text-slate-500 mt-0.5">
+                            Simulates your future CPF growth using <strong>today's fixed monthly income</strong>! Compounded with official interest rates (OA: 2.5%, SA/RA/MA: 4.0%).
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-indigo-50/70 p-3 rounded-2xl border-2 border-indigo-100">
+                        <label class="text-xs font-black text-indigo-900">Target Retirement Age:</label>
+                        <select id="forecast-target-age" onchange="runCPFForecast()" class="px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs font-extrabold text-indigo-900 focus:outline-none focus:border-indigo-400 shadow-sm">
+                            <option value="55">Age 55 (Payout Setup)</option>
+                            <option value="60">Age 60</option>
+                            <option value="65" selected>Age 65 (Full Retirement)</option>
+                            <option value="70">Age 70</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Forecast Summary Metric Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-purple-50/60 p-4 rounded-2xl border-2 border-purple-100">
+                        <p class="text-[11px] font-black text-purple-700 uppercase tracking-wider">Starting CPF Balance</p>
+                        <p id="forecast-start-total" class="text-2xl sm:text-3xl font-black text-purple-950 mt-1">$0</p>
+                    </div>
+                    <div class="bg-indigo-50/60 p-4 rounded-2xl border-2 border-indigo-100">
+                        <p class="text-[11px] font-black text-indigo-700 uppercase tracking-wider">Total Future Contributions</p>
+                        <p id="forecast-total-contributions" class="text-2xl sm:text-3xl font-black text-indigo-950 mt-1">$0</p>
+                    </div>
+                    <div class="bg-emerald-100/80 p-4 rounded-2xl border-2 border-emerald-200 text-emerald-950 shadow-sm">
+                        <p class="text-[11px] font-black text-emerald-800 uppercase tracking-wider">Projected CPF at Target Age</p>
+                        <p id="forecast-end-total" class="text-2xl sm:text-3xl font-black text-emerald-950 mt-1">$0</p>
+                    </div>
+                </div>
+
+                <!-- Detailed Forecast Projection Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead class="bg-purple-50/60 text-purple-900 uppercase text-[11px] font-black border-b-2 border-purple-100">
+                            <tr>
+                                <th class="p-3.5 rounded-l-xl">Age</th>
+                                <th class="p-3.5">OA Balance (2.5%)</th>
+                                <th class="p-3.5">SA/RA Balance (4.0%)</th>
+                                <th class="p-3.5">MA Balance (4.0%)</th>
+                                <th class="p-3.5 text-right rounded-r-xl">Total Expected CPF ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="forecast-table-body" class="divide-y divide-purple-50 font-bold text-slate-800">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Friendly Modal Window for Adding Items -->
+    <div id="app-modal" class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm hidden items-center justify-center p-4 z-50 transition-opacity">
+        <div class="friendly-card bg-white max-w-md w-full p-6 shadow-2xl space-y-4 border-2 border-purple-100">
+            <h3 id="modal-title" class="text-xl font-black text-slate-900">Add Item</h3>
+            <div id="modal-fields" class="space-y-3">
+                <!-- Dynamic fields insertion -->
+            </div>
+            <div class="flex justify-end gap-3 pt-3 border-t-2 border-purple-50">
+                <button onclick="closeModal()" class="friendly-btn px-4 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 transition">Cancel</button>
+                <button onclick="submitModal()" class="friendly-btn bg-purple-200 hover:bg-purple-300 text-purple-950 border border-purple-300 px-5 py-2.5 rounded-xl text-xs font-extrabold shadow-sm transition">Save Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Chart Instance Reference
+        let doughnutChart = null;
+
+        // Application Data Model (Updated with SRS and OA Investment categories)
+        let appState = {
+            assets: [
+                { id: 1, name: 'DBS High Yield Cash Savings', category: 'Cash', value: 28000 },
+                { id: 2, name: 'VWRA Global ETF Portfolio', category: 'Investments', value: 95000 },
+                { id: 3, name: 'Supplementary Retirement Scheme (SRS)', category: 'SRS Investments', value: 15300 },
+                { id: 4, name: 'S&P 500 Index via CPFIS-OA', category: 'OA Investments', value: 22000 },
+                { id: 5, name: 'Crypto Investments (BTC/ETH)', category: 'Crypto', value: 14000 }
+            ],
+            liabilities: [
+                { id: 1, name: 'HDB BTO Housing Loan', principal: 250000, rate: 2.6, tenure: 25, amount: 331250 },
+                { id: 2, name: 'Car Loan Balance', principal: 30000, rate: 2.78, tenure: 5, amount: 34170 }
+            ],
+            expenses: [
+                { id: 1, name: 'Food & Groceries', amount: 900 },
+                { id: 2, name: 'Utilities & Telecom', amount: 280 },
+                { id: 3, name: 'Insurance Premiums', amount: 350 },
+                { id: 4, name: 'Parents Allowance', amount: 600 }
+            ],
+            adhocExpenses: [
+                { id: 1, desc: 'Weekend Family Dinner', date: '2026-10-10', amount: 135 },
+                { id: 2, desc: 'Taxi Rides', date: '2026-10-11', amount: 32 }
+            ]
+        };
+
+        let currentModalType = null;
+
+        // Tab Switching Functionality
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            const navButtons = ['dashboard', 'income', 'assets', 'liabilities', 'cpf'];
+            navButtons.forEach(btn => {
+                const el = document.getElementById('nav-' + btn);
+                if (btn === tabId) {
+                    el.className = 'friendly-btn px-4 py-2.5 rounded-xl bg-purple-200 text-purple-900 shadow-sm flex items-center gap-2';
+                } else {
+                    el.className = 'friendly-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-2';
+                }
+            });
+
+            if (tabId === 'cpf') {
+                runCPFForecast();
+            }
+        }
+
+        /* 
+           Official 2026 Singapore CPF Contribution Rate Logic
+           CPF Wage Ceiling: $7,400 (2026 rate)
+        */
+        function getCPFContributionRates(age) {
+            if (age <= 35) {
+                return { employee: 0.20, employer: 0.17, oa: 0.6217, sa: 0.1621, ma: 0.2162 };
+            } else if (age <= 45) {
+                return { employee: 0.20, employer: 0.17, oa: 0.5677, sa: 0.1891, ma: 0.2432 };
+            } else if (age <= 50) {
+                return { employee: 0.20, employer: 0.17, oa: 0.5136, sa: 0.2162, ma: 0.2702 };
+            } else if (age <= 55) {
+                return { employee: 0.20, employer: 0.17, oa: 0.4055, sa: 0.3108, ma: 0.2837 };
+            } else if (age <= 60) {
+                return { employee: 0.17, employer: 0.155, oa: 0.3693, sa: 0.3230, ma: 0.3077 };
+            } else if (age <= 65) {
+                return { employee: 0.115, employer: 0.115, oa: 0.1522, sa: 0.4565, ma: 0.3913 };
+            } else if (age <= 70) {
+                return { employee: 0.075, employer: 0.09, oa: 0.0606, sa: 0.4242, ma: 0.5152 };
+            } else {
+                return { employee: 0.05, employer: 0.075, oa: 0.08, sa: 0.20, ma: 0.72 };
+            }
+        }
+
+        function calculateProfileCPF(age, salary) {
+            const cappedSalary = Math.min(salary, 7400); // 2026 CPF Salary Ceiling
+            const rates = getCPFContributionRates(age);
+
+            const employeeContribution = Math.round(cappedSalary * rates.employee);
+            const employerContribution = Math.round(cappedSalary * rates.employer);
+            const totalMonthly = employeeContribution + employerContribution;
+
+            const oa = Math.round(totalMonthly * rates.oa);
+            const sa = Math.round(totalMonthly * rates.sa);
+            const ma = Math.round(totalMonthly * rates.ma);
+
+            return {
+                employee: employeeContribution,
+                employer: employerContribution,
+                total: totalMonthly,
+                oa: oa,
+                sa: sa,
+                ma: ma,
+                isRetireeAge: age >= 55
+            };
+        }
+
+        function calculateCPF() {
+            // User CPF
+            const uAge = parseFloat(document.getElementById('user-age').value) || 0;
+            const uSalary = parseFloat(document.getElementById('user-salary').value) || 0;
+            const uCpf = calculateProfileCPF(uAge, uSalary);
+
+            document.getElementById('cpf-user-employee').innerText = '-$' + uCpf.employee.toLocaleString() + ' /mo';
+            document.getElementById('cpf-user-employer').innerText = '+$' + uCpf.employer.toLocaleString() + ' /mo';
+            document.getElementById('cpf-user-total').innerText = '$' + uCpf.total.toLocaleString() + ' /mo';
+            document.getElementById('cpf-user-oa').innerText = '$' + uCpf.oa.toLocaleString();
+            document.getElementById('cpf-user-sa').innerText = '$' + uCpf.sa.toLocaleString();
+            document.getElementById('cpf-user-ma').innerText = '$' + uCpf.ma.toLocaleString();
+            document.getElementById('cpf-user-sa-label').innerText = uCpf.isRetireeAge ? 'RA (Retire)' : 'SA (Retire)';
+
+            // Spouse CPF
+            const sAge = parseFloat(document.getElementById('spouse-age').value) || 0;
+            const sSalary = parseFloat(document.getElementById('spouse-salary').value) || 0;
+            const sCpf = calculateProfileCPF(sAge, sSalary);
+
+            document.getElementById('cpf-spouse-employee').innerText = '-$' + sCpf.employee.toLocaleString() + ' /mo';
+            document.getElementById('cpf-spouse-employer').innerText = '+$' + sCpf.employer.toLocaleString() + ' /mo';
+            document.getElementById('cpf-spouse-total').innerText = '$' + sCpf.total.toLocaleString() + ' /mo';
+            document.getElementById('cpf-spouse-oa').innerText = '$' + sCpf.oa.toLocaleString();
+            document.getElementById('cpf-spouse-sa').innerText = '$' + sCpf.sa.toLocaleString();
+            document.getElementById('cpf-spouse-ma').innerText = '$' + sCpf.ma.toLocaleString();
+            document.getElementById('cpf-spouse-sa-label').innerText = sCpf.isRetireeAge ? 'RA (Retire)' : 'SA (Retire)';
+
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            renderDashboard();
+            renderTables();
+            runCPFForecast();
+        }
+
+        function renderDashboard() {
+            const oaBal = parseFloat(document.getElementById('bal-oa').value) || 0;
+            const saBal = parseFloat(document.getElementById('bal-sa').value) || 0;
+            const maBal = parseFloat(document.getElementById('bal-ma').value) || 0;
+            const totalCPF = oaBal + saBal + maBal;
+
+            let totalPortfolioAssets = appState.assets.reduce((sum, item) => sum + item.value, 0);
+            let totalAssets = totalPortfolioAssets + totalCPF;
+
+            let totalLiabilities = appState.liabilities.reduce((sum, item) => sum + item.amount, 0);
+            let netWorth = totalAssets - totalLiabilities;
+
+            let userSalary = parseFloat(document.getElementById('user-salary').value) || 0;
+            let spouseSalary = parseFloat(document.getElementById('spouse-salary').value) || 0;
+            let totalIncome = userSalary + spouseSalary;
+
+            let totalFixedExp = appState.expenses.reduce((sum, item) => sum + item.amount, 0);
+            let totalAdhocExp = appState.adhocExpenses.reduce((sum, item) => sum + item.amount, 0);
+            let totalExpenses = totalFixedExp + totalAdhocExp;
+
+            let monthlyCashflow = totalIncome - totalExpenses;
+
+            document.getElementById('dash-net-worth').innerText = '$' + Math.round(netWorth).toLocaleString();
+            document.getElementById('dash-total-assets').innerText = '$' + Math.round(totalAssets).toLocaleString();
+            document.getElementById('dash-total-liabilities').innerText = '$' + Math.round(totalLiabilities).toLocaleString();
+            document.getElementById('dash-monthly-cashflow').innerText = '$' + Math.round(monthlyCashflow).toLocaleString();
+
+            // Category breakdown computations
+            let cashVal = appState.assets.filter(a => a.category === 'Cash').reduce((s, a) => s + a.value, 0);
+            let invVal = appState.assets.filter(a => a.category === 'Investments' || a.category === 'Crypto' || a.category === 'Property').reduce((s, a) => s + a.value, 0);
+            let srsVal = appState.assets.filter(a => a.category === 'SRS Investments').reduce((s, a) => s + a.value, 0);
+            let oaInvVal = appState.assets.filter(a => a.category === 'OA Investments').reduce((s, a) => s + a.value, 0);
+
+            let cpfPct = totalAssets ? Math.round((totalCPF / totalAssets) * 100) : 0;
+            let invPct = totalAssets ? Math.round((invVal / totalAssets) * 100) : 0;
+            let srsPct = totalAssets ? Math.round((srsVal / totalAssets) * 100) : 0;
+            let oaInvPct = totalAssets ? Math.round((oaInvVal / totalAssets) * 100) : 0;
+            let cashPct = totalAssets ? Math.round((cashVal / totalAssets) * 100) : 0;
+
+            let barsContainer = document.getElementById('allocation-bars');
+            barsContainer.innerHTML = `
+                <div>
+                    <div class="flex justify-between text-xs font-bold mb-1.5">
+                        <span class="text-indigo-900 font-black">🏛️ CPF Statutory Balances</span>
+                        <span class="text-slate-900 font-extrabold">$${totalCPF.toLocaleString()} (${cpfPct}%)</span>
+                    </div>
+                    <div class="w-full bg-indigo-50 h-3.5 rounded-full overflow-hidden border border-indigo-100">
+                        <div class="bg-indigo-300 h-full rounded-full transition-all duration-500" style="width: ${cpfPct}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-bold mb-1.5">
+                        <span class="text-purple-900 font-black">📈 Stocks & General Investments</span>
+                        <span class="text-slate-900 font-extrabold">$${invVal.toLocaleString()} (${invPct}%)</span>
+                    </div>
+                    <div class="w-full bg-purple-50 h-3.5 rounded-full overflow-hidden border border-purple-100">
+                        <div class="bg-purple-300 h-full rounded-full transition-all duration-500" style="width: ${invPct}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-bold mb-1.5">
+                        <span class="text-amber-900 font-black">🎯 SRS Tax Savings Investments</span>
+                        <span class="text-slate-900 font-extrabold">$${srsVal.toLocaleString()} (${srsPct}%)</span>
+                    </div>
+                    <div class="w-full bg-amber-50 h-3.5 rounded-full overflow-hidden border border-amber-100">
+                        <div class="bg-amber-300 h-full rounded-full transition-all duration-500" style="width: ${srsPct}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-bold mb-1.5">
+                        <span class="text-sky-900 font-black">🚀 CPF-OA Investments (CPFIS)</span>
+                        <span class="text-slate-900 font-extrabold">$${oaInvVal.toLocaleString()} (${oaInvPct}%)</span>
+                    </div>
+                    <div class="w-full bg-sky-50 h-3.5 rounded-full overflow-hidden border border-sky-100">
+                        <div class="bg-sky-300 h-full rounded-full transition-all duration-500" style="width: ${oaInvPct}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-bold mb-1.5">
+                        <span class="text-emerald-900 font-black">💵 Liquid Bank Cash</span>
+                        <span class="text-slate-900 font-extrabold">$${cashVal.toLocaleString()} (${cashPct}%)</span>
+                    </div>
+                    <div class="w-full bg-emerald-50 h-3.5 rounded-full overflow-hidden border border-emerald-100">
+                        <div class="bg-emerald-300 h-full rounded-full transition-all duration-500" style="width: ${cashPct}%"></div>
+                    </div>
+                </div>
+            `;
+
+            // Health Metrics
+            let liquidityRatio = totalAssets ? Math.round(((cashVal + totalCPF + srsVal + oaInvVal) / totalAssets) * 100) : 0;
+            let debtRatio = totalAssets ? Math.round((totalLiabilities / totalAssets) * 100) : 0;
+            let savingsRate = totalIncome ? Math.round((monthlyCashflow / totalIncome) * 100) : 0;
+
+            document.getElementById('health-liquidity').innerText = liquidityRatio + '%';
+            document.getElementById('health-debt').innerText = debtRatio + '%';
+            document.getElementById('health-savings').innerText = savingsRate + '%';
+
+            // Update Doughnut Chart
+            renderDoughnutChart(totalCPF, invVal, srsVal, oaInvVal, cashVal);
+        }
+
+        function renderDoughnutChart(cpf, inv, srs, oaInv, cash) {
+            const ctx = document.getElementById('assetDoughnutChart').getContext('2d');
+            
+            if (doughnutChart) {
+                doughnutChart.destroy();
+            }
+
+            doughnutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['CPF Balances', 'Investments', 'SRS Account', 'OA Investments', 'Cash Savings'],
+                    datasets: [{
+                        data: [cpf, inv, srs, oaInv, cash],
+                        backgroundColor: ['#c7d2fe', '#e9d5ff', '#fde68a', '#bae6fd', '#a7f3d0'],
+                        borderColor: '#ffffff',
+                        borderWidth: 4,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            const legendContainer = document.getElementById('chart-legend-custom');
+            legendContainer.innerHTML = `
+                <div class="flex items-center justify-between text-slate-700">
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-indigo-200 border border-indigo-300"></span> CPF Accounts</span>
+                    <span class="font-black text-slate-900">$${cpf.toLocaleString()}</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-700">
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-200 border border-purple-300"></span> Investments</span>
+                    <span class="font-black text-slate-900">$${inv.toLocaleString()}</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-700">
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-200 border border-amber-300"></span> SRS Funds</span>
+                    <span class="font-black text-slate-900">$${srs.toLocaleString()}</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-700">
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-sky-200 border border-sky-300"></span> OA Investments</span>
+                    <span class="font-black text-slate-900">$${oaInv.toLocaleString()}</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-700">
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-200 border border-emerald-300"></span> Cash Savings</span>
+                    <span class="font-black text-slate-900">$${cash.toLocaleString()}</span>
+                </div>
+            `;
+        }
+
+        function renderTables() {
+            // Render Assets
+            const assetBody = document.getElementById('assets-table-body');
+            assetBody.innerHTML = appState.assets.map(a => `
+                <tr class="hover:bg-purple-50/30 transition">
+                    <td class="p-3.5 font-extrabold text-slate-900">${a.name}</td>
+                    <td class="p-3.5">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-black ${
+                            a.category === 'SRS Investments' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
+                            a.category === 'OA Investments' ? 'bg-sky-100 text-sky-900 border border-sky-200' :
+                            a.category === 'Cash' ? 'bg-emerald-100 text-emerald-900 border border-emerald-200' :
+                            'bg-purple-100 text-purple-900 border border-purple-200'
+                        }">
+                            ${a.category}
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-base font-black text-emerald-700">$${a.value.toLocaleString()}</td>
+                    <td class="p-3.5 text-right">
+                        <button onclick="deleteAsset(${a.id})" class="text-rose-400 hover:text-rose-600 font-extrabold text-xs bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100 hover:bg-rose-100 transition">Remove</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Render Liabilities
+            const liabBody = document.getElementById('liabilities-table-body');
+            liabBody.innerHTML = appState.liabilities.map(l => `
+                <tr class="hover:bg-rose-50/30 transition">
+                    <td class="p-3 font-extrabold text-slate-900">${l.name}</td>
+                    <td class="p-3 text-xs text-slate-600 font-bold">${l.rate}% / ${l.tenure} Yrs</td>
+                    <td class="p-3 text-base font-black text-rose-700">$${Math.round(l.amount).toLocaleString()}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteLiability(${l.id})" class="text-rose-400 hover:text-rose-600 font-extrabold text-xs bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100 hover:bg-rose-100 transition">Remove</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Render Expenses
+            const expBody = document.getElementById('expenses-table-body');
+            expBody.innerHTML = appState.expenses.map(e => `
+                <tr class="hover:bg-indigo-50/30 transition">
+                    <td class="p-3 font-extrabold text-slate-900">${e.name}</td>
+                    <td class="p-3 text-base font-black text-indigo-700">$${e.amount.toLocaleString()}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteExpense(${e.id})" class="text-rose-400 hover:text-rose-600 font-extrabold text-xs bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100 hover:bg-rose-100 transition">Remove</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Render Daily Expenses
+            const adhocBody = document.getElementById('adhoc-table-body');
+            adhocBody.innerHTML = appState.adhocExpenses.map(a => `
+                <tr class="hover:bg-amber-50/30 transition">
+                    <td class="p-3 font-extrabold text-slate-900">${a.desc}</td>
+                    <td class="p-3 text-xs text-slate-500 font-bold">${a.date}</td>
+                    <td class="p-3 text-base font-black text-amber-800">$${a.amount.toLocaleString()}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteAdhoc(${a.id})" class="text-rose-400 hover:text-rose-600 font-extrabold text-xs bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100 hover:bg-rose-100 transition">Remove</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Modal Management
+        function openAssetModal() {
+            currentModalType = 'asset';
+            document.getElementById('modal-title').innerText = '➕ Add Asset, SRS or OA Investment';
+            document.getElementById('modal-fields').innerHTML = `
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Asset Name</label>
+                    <input type="text" id="m-name" placeholder="e.g. Endowus SRS Portfolio or S&P 500 OA" class="w-full px-4 py-2.5 rounded-xl bg-purple-50/40 border-2 border-purple-100 text-xs font-bold text-slate-900 focus:outline-none focus:border-purple-300">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Category</label>
+                    <select id="m-category" class="w-full px-4 py-2.5 rounded-xl bg-purple-50/40 border-2 border-purple-100 text-xs font-bold text-slate-900 focus:outline-none focus:border-purple-300">
+                        <option value="Investments">Investments / Stocks</option>
+                        <option value="SRS Investments">SRS Investments (Tax Relief)</option>
+                        <option value="OA Investments">CPF OA Investments (CPFIS)</option>
+                        <option value="Cash">Cash Savings</option>
+                        <option value="Crypto">Crypto</option>
+                        <option value="Property">Property</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Current Value ($)</label>
+                    <input type="number" id="m-value" placeholder="15000" class="w-full px-4 py-2.5 rounded-xl bg-purple-50/40 border-2 border-purple-100 text-xs font-bold text-slate-900 focus:outline-none focus:border-purple-300">
+                </div>
+            `;
+            document.getElementById('app-modal').classList.remove('hidden');
+            document.getElementById('app-modal').classList.add('flex');
+        }
+
+        function openLiabilityModal() {
+            currentModalType = 'liability';
+            document.getElementById('modal-title').innerText = '➕ Add Debt or Loan with Interest';
+            document.getElementById('modal-fields').innerHTML = `
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Loan / Debt Item Name</label>
+                    <input type="text" id="m-name" placeholder="e.g. HDB BTO Flat Loan" class="w-full px-4 py-2.5 rounded-xl bg-rose-50/40 border-2 border-rose-100 text-xs font-bold text-slate-900 focus:outline-none focus:border-rose-300">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Loan Principal ($)</label>
+                    <input type="number" id="m-principal" placeholder="250000" class="w-full px-4 py-2.5 rounded-xl bg-rose-50/40 border-2 border-rose-100 text-xs font-bold text-slate-900 focus:outline-none focus:border-rose-300">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Interest Rate (%)</label>
+                        <input type="number" step="0.01" id="m-rate" placeholder="2.6" value="2.6" class="w-full px-4 py-2.5 rounded-xl bg-rose-50/40 border-2 border-rose-100 text-xs font-bold text-slate-900 focus:outline-none focus:border-rose-300">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Tenure (Years)</label>
+                        <input type="number" id="m-tenure" placeholder="25" value="25" class="w-full px-4 py-2.5 rounded-xl bg-rose-50/40 border-2 border-rose-100 text-xs font-bold text-slate-900 focus:outline-none focus:border-rose-300">
+                    </div>
+                </div>
+            `;
+            document.getElementById('app-modal').classList.remove('hidden');
+            document.getElementById('app-modal').classList.add('flex');
+        }
+
+        function openExpenseModal() {
+            currentModalType = 'expense';
+            document.getElementById('modal-title').innerText = '➕ Add Monthly Fixed Bill';
+            document.getElementById('modal-fields').innerHTML = `
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Bill Name</label>
+                    <input type="text" id="m-name" placeholder="e.g. Electricity Bill" class="w-full px-4 py-2.5 rounded-xl bg-indigo-50/40 border-2 border-indigo-100 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-300">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Monthly Cost ($)</label>
+                    <input type="number" id="m-amount" placeholder="120" class="w-full px-4 py-2.5 rounded-xl bg-indigo-50/40 border-2 border-indigo-100 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-300">
+                </div>
+            `;
+            document.getElementById('app-modal').classList.remove('hidden');
+            document.getElementById('app-modal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('app-modal').classList.add('hidden');
+            document.getElementById('app-modal').classList.remove('flex');
+        }
+
+        function submitModal() {
+            if (currentModalType === 'asset') {
+                const name = document.getElementById('m-name').value;
+                const category = document.getElementById('m-category').value;
+                const value = parseFloat(document.getElementById('m-value').value) || 0;
+                if (name) {
+                    appState.assets.push({ id: Date.now(), name, category, value });
+                }
+            } else if (currentModalType === 'liability') {
+                const name = document.getElementById('m-name').value;
+                const principal = parseFloat(document.getElementById('m-principal').value) || 0;
+                const rate = parseFloat(document.getElementById('m-rate').value) || 0;
+                const tenure = parseFloat(document.getElementById('m-tenure').value) || 0;
+                
+                // Calculate Total Repayment Amount = Principal + Simple Interest
+                const totalInterest = principal * (rate / 100) * tenure;
+                const fullAmount = principal + totalInterest;
+
+                if (name && principal > 0) {
+                    appState.liabilities.push({ 
+                        id: Date.now(), 
+                        name, 
+                        principal, 
+                        rate, 
+                        tenure, 
+                        amount: fullAmount 
+                    });
+                }
+            } else if (currentModalType === 'expense') {
+                const name = document.getElementById('m-name').value;
+                const amount = parseFloat(document.getElementById('m-amount').value) || 0;
+                if (name) {
+                    appState.expenses.push({ id: Date.now(), name, amount });
+                }
+            }
+            closeModal();
+            saveAndRender();
+        }
+
+        function deleteAsset(id) {
+            appState.assets = appState.assets.filter(a => a.id !== id);
+            saveAndRender();
+        }
+
+        function deleteLiability(id) {
+            appState.liabilities = appState.liabilities.filter(l => l.id !== id);
+            saveAndRender();
+        }
+
+        function deleteExpense(id) {
+            appState.expenses = appState.expenses.filter(e => e.id !== id);
+            saveAndRender();
+        }
+
+        function addAdhocExpense() {
+            const desc = document.getElementById('adhoc-desc').value;
+            const amount = parseFloat(document.getElementById('adhoc-amount').value) || 0;
+            if (desc && amount > 0) {
+                const today = new Date().toISOString().split('T')[0];
+                appState.adhocExpenses.push({ id: Date.now(), desc, date: today, amount });
+                document.getElementById('adhoc-desc').value = '';
+                document.getElementById('adhoc-amount').value = '';
+                saveAndRender();
+            }
+        }
+
+        function deleteAdhoc(id) {
+            appState.adhocExpenses = appState.adhocExpenses.filter(a => a.id !== id);
+            saveAndRender();
+        }
+
+        /* 
+           CPF FORECASTER LOGIC
+           Simulates compounding and annual contributions from current age to target age
+        */
+        function runCPFForecast() {
+            const currentAge = parseFloat(document.getElementById('user-age').value) || 30;
+            const targetAge = parseFloat(document.getElementById('forecast-target-age').value) || 65;
+            const userSalary = parseFloat(document.getElementById('user-salary').value) || 0;
+
+            let curOA = parseFloat(document.getElementById('bal-oa').value) || 0;
+            let curSA = parseFloat(document.getElementById('bal-sa').value) || 0;
+            let curMA = parseFloat(document.getElementById('bal-ma').value) || 0;
+
+            const startTotal = curOA + curSA + curMA;
+            let totalContributionsAdded = 0;
+
+            const tableBody = document.getElementById('forecast-table-body');
+            tableBody.innerHTML = '';
+
+            if (targetAge <= currentAge) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-rose-500 font-bold">Target age must be greater than current age (${currentAge})!</td></tr>`;
+                return;
+            }
+
+            const oaRate = 0.025; // 2.5% OA Interest
+            const saRate = 0.04;  // 4.0% SA/RA Interest
+            const maRate = 0.04;  // 4.0% MA Interest
+
+            for (let age = currentAge; age <= targetAge; age++) {
+                // Determine yearly CPF additions based on age & salary
+                const cpfContrib = calculateProfileCPF(age, userSalary);
+                const annualOA = cpfContrib.oa * 12;
+                const annualSA = cpfContrib.sa * 12;
+                const annualMA = cpfContrib.ma * 12;
+
+                if (age < targetAge) {
+                    totalContributionsAdded += (annualOA + annualSA + annualMA);
+
+                    // Add annual contributions
+                    curOA += annualOA;
+                    curSA += annualSA;
+                    curMA += annualMA;
+
+                    // Compound annual interest
+                    curOA += curOA * oaRate;
+                    curSA += curSA * saRate;
+                    curMA += curMA * maRate;
+                }
+
+                const totalAtAge = curOA + curSA + curMA;
+
+                // Render row
+                tableBody.innerHTML += `
+                    <tr class="${age === targetAge ? 'bg-emerald-100/60 font-black' : 'hover:bg-purple-50/30'} transition">
+                        <td class="p-3.5 font-black text-slate-900">Age ${age} ${age === currentAge ? '(Now)' : ''} ${age === targetAge ? '🎯' : ''}</td>
+                        <td class="p-3.5 text-sky-900 font-bold">$${Math.round(curOA).toLocaleString()}</td>
+                        <td class="p-3.5 text-purple-900 font-bold">$${Math.round(curSA).toLocaleString()}</td>
+                        <td class="p-3.5 text-emerald-900 font-bold">$${Math.round(curMA).toLocaleString()}</td>
+                        <td class="p-3.5 text-right font-black ${age === targetAge ? 'text-emerald-950 text-base' : 'text-slate-900'}">$${Math.round(totalAtAge).toLocaleString()}</td>
+                    </tr>
+                `;
+            }
+
+            document.getElementById('forecast-start-total').innerText = '$' + Math.round(startTotal).toLocaleString();
+            document.getElementById('forecast-total-contributions').innerText = '$' + Math.round(totalContributionsAdded).toLocaleString();
+            document.getElementById('forecast-end-total').innerText = '$' + Math.round(curOA + curSA + curMA).toLocaleString();
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            calculateCPF();
+        };
+    </script>
+</body>
+</html>
